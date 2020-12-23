@@ -4,20 +4,23 @@ import torch
 import torch.nn as nn
 from torch.autograd import Function
 
-
+device = torch.device('cuda:0') if torch.cuda.is_available() else torch.device('cpu')
 class GradReverse(Function):
-    def __init__(self, lambd):
-        self.lambd = lambd
+    @staticmethod
+    def forward(ctx, x, lambd=1.0):
+        result = x.view_as(x)
+        lambd = torch.Tensor([lambd]).to(device)
+        ctx.save_for_backward(result, lambd)
+        return result
 
-    def forward(self, x):
-        return x.view_as(x)
-
-    def backward(self, grad_output):
-        return (grad_output * -self.lambd)
+    @staticmethod
+    def backward(ctx, grad_output):
+        result, lambd = ctx.saved_tensors
+        return (grad_output * -lambd), None
 
 
 def grad_reverse(x, lambd=1.0):
-    return GradReverse(lambd)(x)
+    return GradReverse.apply(x,lambd)
 
 
 def l2_norm(input):

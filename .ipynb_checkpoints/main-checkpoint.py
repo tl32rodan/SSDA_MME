@@ -6,11 +6,11 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.autograd import Variable
-from model.resnet import resnet34, resnet50, resnet101
+from model.resnet import resnet34
 from model.basenet import AlexNetBase, VGGBase, Predictor, Predictor_deep
 from utils.utils import weights_init
 from utils.lr_schedule import inv_lr_scheduler
-from utils.return_dataset import return_dataset, return_dataset_test
+from utils.return_dataset import return_dataset
 from utils.loss import entropy, adentropy
 # Training settings
 parser = argparse.ArgumentParser(description='SSDA Classification')
@@ -64,8 +64,6 @@ print('Dataset %s Source %s Target %s Labeled num perclass %s Network %s' %
       (args.dataset, args.source, args.target, args.num, args.net))
 source_loader, target_loader, target_loader_unl, target_loader_val, \
     target_loader_test, class_list = return_dataset(args)
-target_loader_test, _ = return_dataset_test(args)
-
 use_gpu = torch.cuda.is_available()
 record_dir = 'record/%s/%s' % (args.dataset, args.method)
 if not os.path.exists(record_dir):
@@ -79,12 +77,6 @@ torch.cuda.manual_seed(args.seed)
 if args.net == 'resnet34':
     G = resnet34()
     inc = 512
-elif args.net == 'resnet50':
-    G = resnet50()
-    inc = 2048
-elif args.net == 'resnet101':
-    G = resnet101()
-    inc = 2048
 elif args.net == "alexnet":
     G = AlexNetBase()
     inc = 4096
@@ -185,14 +177,11 @@ def train():
         data_t = next(data_iter_t)
         data_t_unl = next(data_iter_t_unl)
         data_s = next(data_iter_s)
-        
-        with torch.no_grad():
-            im_data_s.resize_(data_s[0].size()).copy_(data_s[0])
-            gt_labels_s.resize_(data_s[1].size()).copy_(data_s[1])
-            im_data_t.resize_(data_t[0].size()).copy_(data_t[0])
-            gt_labels_t.resize_(data_t[1].size()).copy_(data_t[1])
-            im_data_tu.resize_(data_t_unl[0].size()).copy_(data_t_unl[0])
-
+        im_data_s.data.resize_(data_s[0].size()).copy_(data_s[0])
+        gt_labels_s.data.resize_(data_s[1].size()).copy_(data_s[1])
+        im_data_t.data.resize_(data_t[0].size()).copy_(data_t[0])
+        gt_labels_t.data.resize_(data_t[1].size()).copy_(data_t[1])
+        im_data_tu.data.resize_(data_t_unl[0].size()).copy_(data_t_unl[0])
         zero_grad_all()
         data = torch.cat((im_data_s, im_data_t), 0)
         target = torch.cat((gt_labels_s, gt_labels_t), 0)
@@ -234,16 +223,12 @@ def train():
         if step % args.log_interval == 0:
             print(log_train)
         if step % args.save_interval == 0 and step > 0:
-            print('---------------------------------')
-            print('Ttrain:')
-            loss_unl, acc_unl = test(target_loader_unl)
-            print('---------------------------------')
-            print('Ttest:')
             loss_test, acc_test = test(target_loader_test)
+            loss_val, acc_val = test(target_loader_val)
             G.train()
             F1.train()
-            if acc_unl >= best_acc:
-                best_acc = acc_unl
+            if acc_val >= best_acc:
+                best_acc = acc_val
                 best_acc_test = acc_test
                 counter = 0
             else:
@@ -251,13 +236,13 @@ def train():
             if args.early:
                 if counter > args.patience:
                     break
-            print('best acc test %f best acc unl %f' % (best_acc_test,
-                                                        acc_unl))
+            print('best acc test %f best acc val %f' % (best_acc_test,
+                                                        acc_val))
             print('record %s' % record_file)
             with open(record_file, 'a') as f:
                 f.write('step %d best %f final %f \n' % (step,
                                                          best_acc_test,
-                                                         acc_unl))
+                                                         acc_val))
             G.train()
             F1.train()
             if args.save_check:
@@ -285,11 +270,11 @@ def test(loader):
     num_class = len(class_list)
     output_all = np.zeros((0, num_class))
     criterion = nn.CrossEntropyLoss().cuda()
-    confusion_matrix = np.zeros((num_class, num_class))
+    confusion_matrix = torch.zeros(num_class, num_class)
     with torch.no_grad():
         for batch_idx, data_t in enumerate(loader):
-            im_data_t.resize_(data_t[0].size()).copy_(data_t[0])
-            gt_labels_t.resize_(data_t[1].size()).copy_(data_t[1])
+            im_data_t.data.resize_(data_t[0].size()).copy_(data_t[0])
+            gt_labels_t.data.resize_(data_t[1].size()).copy_(data_t[1])
             feat = G(im_data_t)
             output1 = F1(feat)
             output_all = np.r_[output_all, output1.data.cpu().numpy()]
@@ -299,13 +284,12 @@ def test(loader):
                 confusion_matrix[t.long(), p.long()] += 1
             correct += pred1.eq(gt_labels_t.data).cpu().sum()
             test_loss += criterion(output1, gt_labels_t) / len(loader)
-    print('Test set: Average loss: {:.4f}, '
-          'Accuracy: {}/{} F1 ({:.0f}%)'.
+    print('\nTest set: Average loss: {:.4f}, '
+          'Accuracy: {}/{} F1 ({:.0f}%)\n'.
           format(test_loss, correct, size,
                  100. * correct / size))
-    print('Confusion matrix:')
-    print(confusion_matrix.astype('int'))
     return test_loss.data, 100. * float(correct) / size
 
 
 train()
+test()

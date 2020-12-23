@@ -1,10 +1,9 @@
 from __future__ import print_function
 
-import numpy as np
+
 import argparse
 import os
 import torch
-import torch.nn as nn
 from model.resnet import resnet34, resnet50
 from torch.autograd import Variable
 from tqdm import tqdm

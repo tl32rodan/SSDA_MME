@@ -107,6 +107,7 @@ def return_dataset(args):
 def return_dataset_test(args):
     base_path = './data/txt/%s' % args.dataset
     root = './data/%s/' % args.dataset
+    image_set_file_s = os.path.join(base_path, args.source + '_all' + '.txt')
     image_set_file_test = os.path.join(base_path,
                                        'unlabeled_target_images_' +
                                        args.target_test + '_%d.txt' % (args.num))
@@ -125,7 +126,7 @@ def return_dataset_test(args):
     target_dataset_unl = Imagelists_VISDA(image_set_file_test, root=root,
                                           transform=data_transforms['test'],
                                           test=True)
-    class_list = return_classlist(image_set_file_test)
+    class_list = return_classlist(image_set_file_s)
     print("%d classes in this dataset" % len(class_list))
     if args.net == 'alexnet':
         bs = 32
