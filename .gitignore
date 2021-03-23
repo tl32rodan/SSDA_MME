@@ -3,3 +3,4 @@ data/S*
 save/
 record/
 *__pycache__
+**/*.ipynb_checkpoints/

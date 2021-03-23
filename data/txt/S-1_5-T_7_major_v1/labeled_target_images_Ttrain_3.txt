@@ -1,0 +1,12 @@
+Target/Train/K_PR/F4CC67.1.20-021-097-067.jpg 0
+Target/Train/K_PR/F4HK04.1.11-111-034-067.jpg 0
+Target/Train/K_PR/F4U504.1.06-096-098-067.jpg 0
+Target/Train/K_PD/F4T528.1.10-064-010-067.jpg 1
+Target/Train/K_PD/F4U503.1.06-014-037-067.jpg 1
+Target/Train/K_PD/F4T528.1.03-101-070-067.jpg 1
+Target/Train/NK_SP/F4T526.1.05-058-086-067.jpg 2
+Target/Train/NK_SP/F4GT88.1.07-023-042-030.jpg 2
+Target/Train/NK_SP/F4GT86.1.11-012-093-067.jpg 2
+Target/Train/K_FP/F4X644.1.07-030-024-067.jpg 3
+Target/Train/K_FP/F4CR22.1.05-071-086-067.jpg 3
+Target/Train/K_FP/F4Y831.1.25-105-080-030.jpg 3

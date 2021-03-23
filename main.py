@@ -48,8 +48,7 @@ parser.add_argument('--target', type=str, default='Ttrain',
                     help='target domain')
 parser.add_argument('--target_test', type=str, default='Ttest',
                     help='target domain(Testing)')
-parser.add_argument('--dataset', type=str, default='multi',
-                    choices=['multi', 'office', 'office_home','toy_1'],
+parser.add_argument('--dataset', type=str, default='toy_1',
                     help='the name of dataset')
 parser.add_argument('--num', type=int, default=3,
                     help='number of labeled examples in the target')
@@ -60,7 +59,7 @@ parser.add_argument('--early', action='store_false', default=True,
                     help='early stopping on validation or not')
 
 args = parser.parse_args()
-print('Dataset %s Source %s Target %s Labeled num perclass %s Network %s' %
+print('Dataset: %s; Source : %s; Target: %s; Labeled num perclass: %s; Network: %s' %
       (args.dataset, args.source, args.target, args.num, args.net))
 source_loader, target_loader, target_loader_unl, target_loader_val, \
     target_loader_test, class_list = return_dataset(args)
@@ -223,8 +222,8 @@ def train():
                                              step, lr, loss.data,
                                              -loss_t.data, args.method)
         else:
-            log_train = 'S {} T {} Train Ep: {} lr{} \t ' \
-                        'Loss Classification: {:.6f} Method {}\n'.\
+            log_train = 'S: {}; T: {}; Train Ep: {}; lr={} \t ' \
+                        'Loss Classification: {:.6f}; Method: {}\n'.\
                 format(args.source, args.target,
                        step, lr, loss.data,
                        args.method)
