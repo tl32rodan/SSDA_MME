@@ -263,18 +263,10 @@ def train():
             if args.save_check:
                 print('saving model')
                 torch.save(G.state_dict(),
-                           os.path.join(args.checkpath,
-                                        "G_iter_model_{}_{}_"
-                                        "to_{}_step_{}.pth.tar".
-                                        format(args.method, args.source,
-                                               args.target, step)))
+                           os.path.join(args.checkpath, "G_{}_{}.pth".format(args.method, str(int(acc_unl)))))
                 torch.save(F1.state_dict(),
-                           os.path.join(args.checkpath,
-                                        "F1_iter_model_{}_{}_"
-                                        "to_{}_step_{}.pth.tar".
-                                        format(args.method, args.source,
-                                               args.target, step)))
-
+                           os.path.join(args.checkpath, "F1_{}_{}.pth".format(args.method, str(int(acc_unl)))))
+                
 
 def test(loader):
     G.eval()
