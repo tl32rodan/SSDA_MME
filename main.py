@@ -152,7 +152,7 @@ def train():
     F1.train()
     optimizer_g = optim.SGD(params, momentum=0.9, lr=args.lr,
                             weight_decay=0.0005, nesterov=True)
-    optimizer_f = optim.SGD(list(F1.parameters()), lr=args.lr, momentum=0.9,
+    optimizer_f = optim.SGD(list(F1.parameters()), lr=1.0, momentum=0.9,
                             weight_decay=0.0005, nesterov=True)
 
     def zero_grad_all():
@@ -176,17 +176,17 @@ def train():
     counter = 0
 
     
-    sch_g = optim.lr_scheduler.StepLR(optimizer_g, 10, 0.8)
-    sch_f = optim.lr_scheduler.StepLR(optimizer_f, 10, 0.8)
+    #sch_g = optim.lr_scheduler.StepLR(optimizer_g, 10, 0.8)
+    #sch_f = optim.lr_scheduler.StepLR(optimizer_f, 10, 0.8)
 
     # Tensorboard
     writer = SummaryWriter(log_dir=args.checkpath)
 
     for step in range(all_step):
-        #optimizer_g = inv_lr_scheduler(param_lr_g, optimizer_g, step,
-        #                               init_lr=args.lr)
-        #optimizer_f = inv_lr_scheduler(param_lr_f, optimizer_f, step,
-        #                               init_lr=args.lr)
+        optimizer_g = inv_lr_scheduler(param_lr_g, optimizer_g, step,
+                                       init_lr=args.lr)
+        optimizer_f = inv_lr_scheduler(param_lr_f, optimizer_f, step,
+                                       init_lr=args.lr)
         lr = optimizer_f.param_groups[0]['lr']
         # Tensorboard ; record lr
         writer.add_scalar("Others/lr", lr, step)
@@ -257,15 +257,15 @@ def train():
             print('---------------------------------')
             print('Strain:')
             loss_strain, acc_strain = test(source_loader)
-            writer.add_scalar("Accuracy/Strain", loss_strain, step)
+            writer.add_scalar("Accuracy/Source_Testing_Acc", loss_strain, step)
             print('---------------------------------')
             print('Ttrain:')
             loss_unl, acc_unl = test(target_loader_unl)
-            writer.add_scalar("Accuracy/Ttrain", loss_unl, step)
+            writer.add_scalar("Accuracy/Target_Training_Acc", loss_unl, step)
             print('---------------------------------')
             print('Ttest:')
             loss_test, acc_test = test(target_loader_test)
-            writer.add_scalar("Accuracy/Ttest", loss_test, step)
+            writer.add_scalar("Accuracy/Target_Testing_Acc", loss_test, step)
             G.train()
             F1.train()
             if acc_unl >= best_acc:
@@ -293,8 +293,8 @@ def train():
                 torch.save(F1.state_dict(),
                            os.path.join(args.checkpath, "F1_{}_{}.pth".format(args.method, str(int(acc_unl)))))
             
-            sch_g.step()
-            sch_f.step()
+            #sch_g.step()
+            #sch_f.step()
     writer.close()
 
 def test(loader):
