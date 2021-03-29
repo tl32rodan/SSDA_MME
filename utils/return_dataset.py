@@ -44,14 +44,14 @@ def return_dataset(args):
         'train': transforms.Compose([
             ResizeImage(256),
             transforms.RandomHorizontalFlip(),
-            transforms.RandomCrop(crop_size),
+            transforms.CenterCrop(crop_size),
             transforms.ToTensor(),
             transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
         ]),
         'val': transforms.Compose([
             ResizeImage(256),
             transforms.RandomHorizontalFlip(),
-            transforms.RandomCrop(crop_size),
+            transforms.CenterCrop(crop_size),
             transforms.ToTensor(),
             transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
         ]),
@@ -77,7 +77,7 @@ def return_dataset(args):
     if args.net == 'alexnet':
         bs = 32
     else:
-        bs = 24
+        bs = args.batch_size
     source_loader = torch.utils.data.DataLoader(source_dataset, batch_size=bs,
                                                 num_workers=3, shuffle=True,
                                                 drop_last=True)
@@ -94,11 +94,11 @@ def return_dataset(args):
                                     shuffle=True, drop_last=True)
     target_loader_unl = \
         torch.utils.data.DataLoader(target_dataset_unl,
-                                    batch_size=bs * 2, num_workers=3,
+                                    batch_size=bs, num_workers=3,
                                     shuffle=True, drop_last=True)
     target_loader_test = \
         torch.utils.data.DataLoader(target_dataset_test,
-                                    batch_size=bs * 2, num_workers=3,
+                                    batch_size=bs, num_workers=3,
                                     shuffle=True, drop_last=True)
     return source_loader, target_loader, target_loader_unl, \
         target_loader_val, target_loader_test, class_list
