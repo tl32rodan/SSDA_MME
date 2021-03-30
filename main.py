@@ -176,8 +176,8 @@ def train():
     counter = 0
 
     
-    sch_g = optim.lr_scheduler.StepLR(optimizer_g, 30, 0.8)
-    sch_f = optim.lr_scheduler.StepLR(optimizer_f, 30, 0.8)
+    sch_g = optim.lr_scheduler.StepLR(optimizer_g, 100, 0.8)
+    sch_f = optim.lr_scheduler.StepLR(optimizer_f, 100, 0.8)
 
     # Tensorboard
     writer = SummaryWriter(log_dir=args.checkpath)
